@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react'
 import { View, Text, StyleSheet, Alert } from 'react-native'
 import { BarCodeScanner } from 'expo-barcode-scanner';
 
-const ScannerScreen = () => {
-  const [hasPermission, setHasPermission] = useState(false);
+const ScannerScreen = ({ navigation }) => {
   const [scanned, setScanned] = useState(false);
 
   const handleBarCodeScanned = ({ type, data }) => {
@@ -12,7 +11,7 @@ const ScannerScreen = () => {
       {
         text: 'OK',
         onPress: () => {
-          setTimeout(() => setScanned(false), 1000) // Подождать секунду после нажатия ОК, а затем снова дать сканировать камере
+          setTimeout(() => setScanned(false), 2000) // Подождать секунду после нажатия ОК, а затем снова дать сканировать камере
         }
       },
     ]);
@@ -21,16 +20,21 @@ const ScannerScreen = () => {
   useEffect(() => {
     (async () => {
       const { status } = await BarCodeScanner.requestPermissionsAsync();
-      setHasPermission(status === 'granted');
+      if (status != 'granted') {
+        navigation.goBack(null);
+        alert('No access to camera');
+      }
     })();
   }, []);
 
   return (
     <View style={styles.container}>
-      <BarCodeScanner
-        onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-        style={styles.camera}
-      />
+      <View style={styles.border}>
+        <BarCodeScanner
+          onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+          style={styles.camera}
+        />
+      </View>
     </View>
   )
 }
@@ -40,7 +44,11 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'green',
+    backgroundColor: '#491414',
+  },
+  border: {
+    width: '100%',
+    aspectRatio: 1,
   },
   camera: {
     width: '100%',
